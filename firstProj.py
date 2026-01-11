@@ -91,8 +91,12 @@ Later, you could use Tkinter for a simple graphical interface
 Cleanly end the program
 """
 
+# Dictionary to store all students and their subjects/grades
+# Structure: { "Student Name": { "Subject": [list of grades] } }
+
 students = {}
 
+# A function to add new students
 def addStudent(name):
     
     if name not in students: 
@@ -140,26 +144,32 @@ def setGrade(name, subject, grade):
 
         print(students)    
 
-setGrade("Kat", "math", (91,99,23))
+# Option 1: Pass one by one
+setGrade("Kat", "Math", 91)
+setGrade("Kat", "Math", 99)
+setGrade("Kat", "Math", 23)
 
 
 def removeGrade(name, subject, grade):
 
     if name not in students:
         print("This person is not in the record.")
+        return
 
     if subject not in students[name]:
         print(name + " is not taking this subject.")
+        return
 
-    if students[name][subject] == [grade]:
-
+    if grade in students[name][subject]:
         students[name][subject].remove(grade)
+        print(f"Grade {grade} removed from {subject} for {name}.")
 
-
+        # Optional: notify if no grades left in subject
+        if not students[name][subject]:
+            print(f"{name} now has no grades for {subject}.")
 
     else:
-        print("The grade doesn't match.")
-
+        print(f"The grade {grade} does not exist in {subject} for {name}.")
 
 
 
