@@ -131,18 +131,22 @@ def setGrade(name, subject, grade):
             addStudent(name)
 
             students[name][subject] = [grade]
-
-            print(students)
+            
         
         else:
             print("Invalid input. Please type only yes or no.")
             return
         
+
+    if subject in students[name]:
+        students[name][subject].append(grade)
+        print(students)
+        
+        
     else:
-
         students[name][subject] = [grade]
-
-        print(students)    
+        
+        
 
 # Option 1: Pass one by one
 setGrade("Kat", "Math", 91)
@@ -170,6 +174,49 @@ def removeGrade(name, subject, grade):
 
     else:
         print(f"The grade {grade} does not exist in {subject} for {name}.")
+
+
+
+# Displays student's report
+def displayReport(name):
+
+    if name not in students:
+        print("This student is not in our record.")
+        return
+    
+    print("Report for " + name)
+    print("*" * 30)
+        
+    student_data = students[name]
+    allGrades = []
+
+    for subject in sorted(student_data):
+        grades = student_data[subject]
+
+        if len(grades) == 0:
+            print("No grades available")
+            continue
+
+        subject_average = sum(grades) / len(grades)
+        allGrades.extend(grades)
+
+        print(f"{subject}: {grades} | Average: {subject_average:.2f}")
+
+    if allGrades:
+        overall_average = sum(allGrades) / len(allGrades)
+        print("*" * 30)
+        print("Overall Average:", round(overall_average, 2))
+
+
+    else:
+        print("No grades available.")
+
+
+
+        
+
+displayReport("Kat")
+
 
 
 
