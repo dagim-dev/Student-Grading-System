@@ -139,9 +139,9 @@ def setGrade(name, subject, grade):
         students[name][subject] = grade
         
         
-setGrade("Kat", "Math", 91)
-setGrade("Kat", "Math", 99)
-setGrade("Kat", "Math", 23)
+setGrade("Kat", "Math", [91, 99, 23])
+setGrade("Dagim", "computing", [91, 99, 24])
+
 print(students)
 
 
@@ -226,7 +226,16 @@ def removeStudents(studentsNames):
             print(i + " was not found")
 
 
-removeStudents(["Kat", "dagi"])
+
+
+def displayAllStudent():
+
+    for i in students:
+        displayReport(i)
+
+
+displayAllStudent()
+
 
 
 
