@@ -104,16 +104,10 @@ def addStudent(name):
         students[name] = {}
 
         print ("Student added succesfully.")
-
-        print(students)
     
     else:
         print("The student is already in the record!")
 
-
-
-addStudent("Dagi")
-addStudent("Kat")
 
 
 
@@ -129,29 +123,26 @@ def setGrade(name, subject, grade):
 
         elif decision.lower() == "yes":
             addStudent(name)
-
-            students[name][subject] = [grade]
-            
         
         else:
             print("Invalid input. Please type only yes or no.")
             return
         
 
+    if not isinstance(grade, list):
+        grade = [grade]
+
     if subject in students[name]:
-        students[name][subject].append(grade)
-        print(students)
-        
+        students[name][subject].extend(grade)
         
     else:
-        students[name][subject] = [grade]
+        students[name][subject] = grade
         
         
-
-# Option 1: Pass one by one
 setGrade("Kat", "Math", 91)
 setGrade("Kat", "Math", 99)
 setGrade("Kat", "Math", 23)
+print(students)
 
 
 def removeGrade(name, subject, grade):
@@ -177,6 +168,8 @@ def removeGrade(name, subject, grade):
 
 
 
+
+
 # Displays student's report
 def displayReport(name):
 
@@ -184,6 +177,8 @@ def displayReport(name):
         print("This student is not in our record.")
         return
     
+    print()
+    print()
     print("Report for " + name)
     print("*" * 30)
         
@@ -206,16 +201,32 @@ def displayReport(name):
         overall_average = sum(allGrades) / len(allGrades)
         print("*" * 30)
         print("Overall Average:", round(overall_average, 2))
+        print()
+        print()
 
 
     else:
         print("No grades available.")
-
-
-
         
 
+
 displayReport("Kat")
+
+
+
+
+def removeStudents(studentsNames):
+
+    for i in studentsNames:
+        if i in students:
+            students.pop(i)
+            print(i + " has been removed.")   
+
+        else:
+            print(i + " was not found")
+
+
+removeStudents(["Kat", "dagi"])
 
 
 
