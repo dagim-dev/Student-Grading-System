@@ -140,7 +140,12 @@ def setGrade(name, subject, grade):
         
         
 setGrade("Kat", "Math", [91, 99, 23])
+setGrade("Kat", "Science", [10, 10, 0])
+setGrade("Kat", "Computing", [91, 99, 23])
 setGrade("Dagim", "computing", [91, 99, 24])
+setGrade("Emu", "Computing", [10, 10, 0])
+setGrade("Emu", "Math", [10, 10, 0])
+setGrade("Emu", "Science", [10, 10, 0])
 
 print(students)
 
@@ -210,8 +215,6 @@ def displayReport(name):
         
 
 
-displayReport("Kat")
-
 
 
 
@@ -234,7 +237,17 @@ def displayAllStudent():
         displayReport(i)
 
 
-displayAllStudent()
+
+
+def searchStudent(name):
+    if name in students:
+        displayReport(name)
+    
+    else:
+        print("Student not found.")
+
+
+searchStudent("Emu")
 
 
 
