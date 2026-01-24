@@ -91,10 +91,21 @@ Later, you could use Tkinter for a simple graphical interface
 Cleanly end the program
 """
 
+import json
+import os
+from datetime import datetime
+
+
+FILENAME = "students_data.json" # Main JSON file where all student data will be saved and loaded from
+BACKUP_FOLDER = "backups" # Folder to store backup copies of the student data file
+
 # Dictionary to store all students and their subjects/grades
 # Structure: { "Student Name": { "Subject": [list of grades] } }
-
 students = {}
+
+
+
+
 
 # A function to add new students
 def addStudent(name):
@@ -287,7 +298,7 @@ def rank_students():
             overall_avg = sum(all_grades) / len(all_grades)
             student_averages[student] = overall_avg
         else:
-            # Optionally, include students with no grades with average 0 or skip
+            # Optionall. Include students with no grades with average 0 or skip
             # student_averages[student] = 0
             continue  # Skip students with no grades
 
@@ -318,6 +329,58 @@ def rank_students():
 rank_students()
 
 
+def save_data(students_dict, create_backup=True):
+    """
+    Save all student data to a JSON file.
+    Optionally creates a timestamped backup before saving.
+    """
+    # Make backup folder if it doesn't exist
+    if create_backup and not os.path.exists(BACKUP_FOLDER):
+        os.makedirs(BACKUP_FOLDER)
+
+    # Create a backup before overwriting
+    if create_backup and os.path.exists(FILENAME):
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_file = os.path.join(BACKUP_FOLDER, f"students_backup_{timestamp}.json")
+        try:
+            with open(FILENAME, "r") as f:
+                data = f.read()
+            with open(backup_file, "w") as f:
+                f.write(data)
+            print(f"Backup created: {backup_file}")
+        except Exception as e:
+            print(f"Warning: Backup could not be created. {e}")
+
+    # Save current data
+    try:
+        with open(FILENAME, "w") as f:
+            json.dump(students_dict, f, indent=4)
+        print(f"Student data saved successfully to {FILENAME}.")
+    except Exception as e:
+        print(f"Error saving data: {e}")
+
+
+
+def load_data():
+    """
+    Load student data from JSON file.
+    Returns a dictionary.
+    """
+    if not os.path.exists(FILENAME):
+        print(f"No saved data found. Starting with an empty record.")
+        return {}
+
+    try:
+        with open(FILENAME, "r") as f:
+            data = json.load(f)
+        print(f"Student data loaded successfully from {FILENAME}.")
+        return data
+    except json.JSONDecodeError:
+        print("Error: Saved data file is corrupted. Starting with empty record.")
+        return {}
+    except Exception as e:
+        print(f"Error loading data: {e}. Starting with empty record.")
+        return {}
 
 
 
