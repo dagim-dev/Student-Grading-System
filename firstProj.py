@@ -143,6 +143,7 @@ setGrade("Kat", "Math", [91, 99, 23])
 setGrade("Kat", "Science", [10, 10, 0])
 setGrade("Kat", "Computing", [91, 99, 23])
 setGrade("Dagim", "computing", [91, 99, 24])
+setGrade("Dagim", "Math", [83, 79, 90])
 setGrade("Emu", "Computing", [10, 10, 0])
 setGrade("Emu", "Math", [10, 10, 0])
 setGrade("Emu", "Science", [10, 10, 0])
@@ -244,10 +245,83 @@ def searchStudent(name):
         displayReport(name)
     
     else:
-        print("Student not found.")
+        print("Student not found/not in the record.")
 
 
-searchStudent("Emu")
+# searchStudent("Emu")
+
+
+def subjectAverage(subject):
+
+    allGrades = []
+    averageGrade = 0
+
+    for i in students:
+        if subject in students[i]:
+            allGrades.extend(students[i][subject])
+
+    if len(allGrades) > 0:   
+        averageGrade = sum(allGrades) / len(allGrades)
+
+    else:
+        print("There is no one in the record that is taking that class.")
+        return
+
+
+    print("The average grade for " + subject + " is ", averageGrade)
+
+subjectAverage("Math")
+
+
+def rank_students():
+    # Dictionary to store each student's overall average
+    student_averages = {}
+
+    for student, subjects in students.items():
+        all_grades = []
+        
+        for grades in subjects.values():
+            all_grades.extend(grades)
+        
+        if all_grades:  # Only calculate if the student has grades
+            overall_avg = sum(all_grades) / len(all_grades)
+            student_averages[student] = overall_avg
+        else:
+            # Optionally, include students with no grades with average 0 or skip
+            # student_averages[student] = 0
+            continue  # Skip students with no grades
+
+    if not student_averages:
+        print("No students with grades to rank.")
+        return
+
+    # Sort students by average, descending
+    sorted_students = sorted(student_averages.items(), key=lambda x: x[1], reverse=True)
+
+    print("\nStudent Rankings:")
+    print("*" * 40)
+
+    rank = 1
+    prev_avg = None
+    for i, (student, avg) in enumerate(sorted_students):
+        # Handle ties: same average gets same rank
+        if prev_avg is not None and avg == prev_avg:
+            print(f"{rank}. {student} — {avg:.2f}")
+        else:
+            rank = i + 1
+            print(f"{rank}. {student} — {avg:.2f}")
+        prev_avg = avg
+
+    print("*" * 40)
+    print()
+
+rank_students()
+
+
+
+
+
+    
 
 
 
