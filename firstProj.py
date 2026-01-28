@@ -1,344 +1,323 @@
-""" 
-1. Add a student
-
-Input: student name
-
-Action: create a new record for the student
-
-2. Add grades for a student
-
-Input: student name, subject, grade
-
-Action: store the grade under the student’s record
-
-3. Update a grade
-
-Input: student name, subject, new grade
-
-Action: overwrite existing grade
-
-4. Remove a grade
-
-Input: student name, subject
-
-Action: delete that subject from the student’s record
-
-5. Display a student’s report
-
-Show all subjects and grades
-
-Show average grade
-
-6. Calculate average grade for a student
-
-Average of all subjects
-
-7. Remove a student
-
-Input: student name
-
-Action: delete the student from the system
-
-8. Display all students
-
-Show names of all students currently in the system
-
-9. Search for a student
-
-Input: student name
-
-Action: show student record if found
-
-10. Letter grade calculation
-
-Convert numeric average to a letter (A, B, C, etc.)
-
-11. Menu-driven interface
-
-Let the user choose actions via numbered menu
-
-12. Class/Subject average
-
-Calculate average grade for a subject across all students
-
-13. Rank students
-
-Show students ranked by average grade
-
-14. Save and load data
-
-Save all student data to a file (JSON or CSV)
-
-Load data from file on program start
-
-15. Error handling
-
-Handle invalid input (e.g., letters instead of numbers for grades)
-
-Handle missing students/subjects
-
-16. User-friendly display
-
-Format reports neatly with alignment, headers, etc.
-
-17. Optional GUI
-
-Later, you could use Tkinter for a simple graphical interface
-
-
-18. Exit program
-
-Cleanly end the program
-"""
-
 import json
 import os
 from datetime import datetime
 
-
-FILENAME = "students_data.json" # Main JSON file where all student data will be saved and loaded from
-BACKUP_FOLDER = "backups" # Folder to store backup copies of the student data file
+FILENAME = "students_data.json"  # Main JSON file where all student data will be saved and loaded from
+BACKUP_FOLDER = "backups"        # Folder to store backup copies of the student data file
 
 # Dictionary to store all students and their subjects/grades
 # Structure: { "Student Name": { "Subject": [list of grades] } }
 students = {}
 
 
+# Helper functions
 
 
+def normalize_name(name):
+    """Normalize student names to title case."""
+    return name.strip().title()
 
-# A function to add new students
-def addStudent(name):
-    
-    if name not in students: 
-        
-        students[name] = {}
+def normalize_subject(subject):
+    """Normalize subject names to title case."""
+    return subject.strip().title()
 
-        print ("Student added succesfully.")
-    
+def letter_grade(avg):
+    """Convert numeric average to letter grade."""
+    if avg >= 90:
+        return "A+"
+    elif avg >= 85:
+        return "A"
+    elif avg >= 80:
+        return "A-"
+    elif avg >= 75:
+        return "B+"
+    elif avg >= 70:
+        return "B"
+    elif avg >= 65:
+        return "C+"
+    elif avg >= 60:
+        return "C"
+    elif avg >= 50:
+        return "D"
     else:
-        print("The student is already in the record!")
+        return "F"
 
 
+# Core functions
+
+
+def addStudent(name):
+    name = normalize_name(name)
+    if name not in students:
+        students[name] = {}
+        print(f"Student '{name}' added successfully.")
+    else:
+        print(f"The student '{name}' is already in the record!")
 
 
 
 def setGrade(name, subject, grade):
+    name = normalize_name(name)
+    subject = normalize_subject(subject)
 
+    # Auto-create student if missing
     if name not in students:
-        decision = input("The student is not in the record. Do you want to add them as a new student? Yes or no? ")
-
-        if decision.lower() == "no":
-            print("Can not add a grade and a subject for a student that is not in the record. Put student in the record first.")
-            return
-
-        elif decision.lower() == "yes":
-            addStudent(name)
-        
-        else:
-            print("Invalid input. Please type only yes or no.")
-            return
-        
+        students[name] = {}
 
     if not isinstance(grade, list):
         grade = [grade]
 
+    for g in grade:
+        if not isinstance(g, (int, float)):
+            return {
+                "success": False,
+                "message": "Grades must be numbers"
+            }
+
     if subject in students[name]:
         students[name][subject].extend(grade)
-        
     else:
         students[name][subject] = grade
-        
-        
-setGrade("Kat", "Math", [91, 99, 23])
-setGrade("Kat", "Science", [10, 10, 0])
-setGrade("Kat", "Computing", [91, 99, 23])
-setGrade("Dagim", "computing", [91, 99, 24])
-setGrade("Dagim", "Math", [83, 79, 90])
-setGrade("Emu", "Computing", [10, 10, 0])
-setGrade("Emu", "Math", [10, 10, 0])
-setGrade("Emu", "Science", [10, 10, 0])
 
-print(students)
+    return {
+        "success": True,
+        "message": f"Grades added for {name} in {subject}"
+    }
 
 
 def removeGrade(name, subject, grade):
+    name = normalize_name(name)
+    subject = normalize_subject(subject)
+
+    if not isinstance(grade, (int, float)):
+        print(f"Invalid grade input: {grade}. Must be a number.")
+        return
 
     if name not in students:
         print("This person is not in the record.")
         return
-
     if subject not in students[name]:
-        print(name + " is not taking this subject.")
+        print(f"{name} is not taking the subject '{subject}'.")
         return
-
     if grade in students[name][subject]:
         students[name][subject].remove(grade)
         print(f"Grade {grade} removed from {subject} for {name}.")
-
-        # Optional: notify if no grades left in subject
         if not students[name][subject]:
             print(f"{name} now has no grades for {subject}.")
-
     else:
         print(f"The grade {grade} does not exist in {subject} for {name}.")
 
-
-
-
-
-# Displays student's report
 def displayReport(name):
-
+    name = normalize_name(name)
     if name not in students:
         print("This student is not in our record.")
         return
+
+    print("\n" + "="*50)
+    print(f"REPORT FOR {name}")
+    print("="*50)
     
-    print()
-    print()
-    print("Report for " + name)
-    print("*" * 30)
-        
     student_data = students[name]
     allGrades = []
 
-    for subject in sorted(student_data):
-        grades = student_data[subject]
+    if not student_data:
+        print("No subjects or grades available.")
+        return
 
-        if len(grades) == 0:
-            print("No grades available")
+    for subject in sorted(student_data):
+        # Filter numeric grades
+        grades = [g for g in student_data[subject] if isinstance(g, (int, float))]
+
+        if not grades:
+            print(f"{subject:<15}: No grades available")
             continue
 
-        subject_average = sum(grades) / len(grades)
+        subject_avg = sum(grades)/len(grades)
         allGrades.extend(grades)
-
-        print(f"{subject}: {grades} | Average: {subject_average:.2f}")
+        print(f"{subject:<15}: {grades} | Avg: {subject_avg:.2f} | Letter: {letter_grade(subject_avg)}")
 
     if allGrades:
-        overall_average = sum(allGrades) / len(allGrades)
-        print("*" * 30)
-        print("Overall Average:", round(overall_average, 2))
-        print()
-        print()
-
-
-    else:
-        print("No grades available.")
-        
+        overall_avg = sum(allGrades)/len(allGrades)
+        print("-"*50)
+        print(f"Overall Average: {overall_avg:.2f} | Letter: {letter_grade(overall_avg)}")
+    print("="*50 + "\n")
 
 
 
 
+def getStudentReport(name):
+    name = normalize_name(name)
+    if name not in students:
+        return {"success": False, "message": f"Student '{name}' not found."}
 
-def removeStudents(studentsNames):
+    student_data = students[name]
+    report = {
+        "name": name,
+        "subjects": {},
+        "overall_average": None,
+        "overall_letter": None
+    }
 
-    for i in studentsNames:
-        if i in students:
-            students.pop(i)
-            print(i + " has been removed.")   
+    all_grades = []
 
+    for subject, grades_list in student_data.items():
+        # Filter numeric grades
+        grades = [g for g in grades_list if isinstance(g, (int, float))]
+        if not grades:
+            continue
+        subject_avg = sum(grades) / len(grades)
+        all_grades.extend(grades)
+        report["subjects"][subject] = {
+            "grades": grades,
+            "average": subject_avg,
+            "letter": letter_grade(subject_avg)
+        }
+
+    if all_grades:
+        overall_avg = sum(all_grades) / len(all_grades)
+        report["overall_average"] = overall_avg
+        report["overall_letter"] = letter_grade(overall_avg)
+
+    report["success"] = True
+    return report
+
+
+
+
+def removeStudents(names):
+    for name in names:
+        name = normalize_name(name)
+        if name in students:
+            students.pop(name)
+            print(f"{name} has been removed.")
         else:
-            print(i + " was not found")
-
+            print(f"{name} was not found in the record.")
 
 
 
 def displayAllStudent():
-
-    for i in students:
-        displayReport(i)
-
+    for name in students:
+        displayReport(name)
 
 
 
 def searchStudent(name):
+    name = normalize_name(name)
     if name in students:
         displayReport(name)
-    
     else:
-        print("Student not found/not in the record.")
+        print(f"Student '{name}' not found in the record.")
 
-
-# searchStudent("Emu")
 
 
 def subjectAverage(subject):
-
+    subject = normalize_subject(subject)
     allGrades = []
-    averageGrade = 0
 
-    for i in students:
-        if subject in students[i]:
-            allGrades.extend(students[i][subject])
+    for student in students:
+        grades = [g for g in students[student].get(subject, []) if isinstance(g, (int, float))]
+        allGrades.extend(grades)
 
-    if len(allGrades) > 0:   
-        averageGrade = sum(allGrades) / len(allGrades)
-
-    else:
-        print("There is no one in the record that is taking that class.")
+    if not allGrades:
+        print(f"No grades found for the subject '{subject}'.")
         return
 
+    avg = sum(allGrades)/len(allGrades)
+    print(f"The average grade for {subject} is {avg:.2f} | Letter: {letter_grade(avg)}")
 
-    print("The average grade for " + subject + " is ", averageGrade)
 
-subjectAverage("Math")
+
+
+def getSubjectAverage(subject):
+    subject = normalize_subject(subject)
+    all_grades = []
+
+    for student in students:
+        grades = [g for g in students[student].get(subject, []) if isinstance(g, (int, float))]
+        all_grades.extend(grades)
+
+    if not all_grades:
+        return {"success": False, "message": f"No grades found for {subject}"}
+
+    avg = sum(all_grades) / len(all_grades)
+    return {"success": True, "subject": subject, "average": round(avg, 2), "letter": letter_grade(avg)}
+
+
 
 
 def rank_students():
-    # Dictionary to store each student's overall average
     student_averages = {}
-
     for student, subjects in students.items():
         all_grades = []
-        
         for grades in subjects.values():
-            all_grades.extend(grades)
-        
-        if all_grades:  # Only calculate if the student has grades
-            overall_avg = sum(all_grades) / len(all_grades)
-            student_averages[student] = overall_avg
-        else:
-            # Optionall. Include students with no grades with average 0 or skip
-            # student_averages[student] = 0
-            continue  # Skip students with no grades
+            all_grades.extend([g for g in grades if isinstance(g, (int, float))])
+        if all_grades:
+            student_averages[student] = sum(all_grades)/len(all_grades)
 
     if not student_averages:
         print("No students with grades to rank.")
         return
 
-    # Sort students by average, descending
     sorted_students = sorted(student_averages.items(), key=lambda x: x[1], reverse=True)
 
-    print("\nStudent Rankings:")
-    print("*" * 40)
-
+    print("\nSTUDENT RANKINGS")
+    print("="*50)
     rank = 1
     prev_avg = None
     for i, (student, avg) in enumerate(sorted_students):
-        # Handle ties: same average gets same rank
         if prev_avg is not None and avg == prev_avg:
-            print(f"{rank}. {student} — {avg:.2f}")
+            print(f"{rank}. {student:<20} — {avg:.2f} | {letter_grade(avg)}")
         else:
             rank = i + 1
-            print(f"{rank}. {student} — {avg:.2f}")
+            print(f"{rank}. {student:<20} — {avg:.2f} | {letter_grade(avg)}")
+        prev_avg = avg
+    print("="*50 + "\n")
+
+
+
+
+
+def getRankings():
+    student_averages = {}
+    for student, subjects in students.items():
+        all_grades = []
+        for grades in subjects.values():
+            all_grades.extend([g for g in grades if isinstance(g, (int, float))])
+        if all_grades:
+            student_averages[student] = sum(all_grades)/len(all_grades)
+
+    if not student_averages:
+        return {"success": False, "message": "No students with grades to rank."}
+
+    # Sort students by average descending
+    sorted_students = sorted(student_averages.items(), key=lambda x: x[1], reverse=True)
+
+    rankings = []
+    rank = 1
+    prev_avg = None
+
+    for i, (student, avg) in enumerate(sorted_students):
+        if prev_avg is not None and avg == prev_avg:
+            pass  # same rank
+        else:
+            rank = i + 1
+        rankings.append({
+            "rank": rank,
+            "name": student,
+            "average": round(avg, 2),
+            "letter": letter_grade(avg)
+        })
         prev_avg = avg
 
-    print("*" * 40)
-    print()
+    return {"success": True, "rankings": rankings}
 
-rank_students()
+
+# Save & Load
 
 
 def save_data(students_dict, create_backup=True):
-    """
-    Save all student data to a JSON file.
-    Optionally creates a timestamped backup before saving.
-    """
-    # Make backup folder if it doesn't exist
     if create_backup and not os.path.exists(BACKUP_FOLDER):
         os.makedirs(BACKUP_FOLDER)
-
-    # Create a backup before overwriting
     if create_backup and os.path.exists(FILENAME):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         backup_file = os.path.join(BACKUP_FOLDER, f"students_backup_{timestamp}.json")
@@ -350,8 +329,6 @@ def save_data(students_dict, create_backup=True):
             print(f"Backup created: {backup_file}")
         except Exception as e:
             print(f"Warning: Backup could not be created. {e}")
-
-    # Save current data
     try:
         with open(FILENAME, "w") as f:
             json.dump(students_dict, f, indent=4)
@@ -362,14 +339,9 @@ def save_data(students_dict, create_backup=True):
 
 
 def load_data():
-    """
-    Load student data from JSON file.
-    Returns a dictionary.
-    """
     if not os.path.exists(FILENAME):
-        print(f"No saved data found. Starting with an empty record.")
+        print(f"No saved data found. Starting with empty record.")
         return {}
-
     try:
         with open(FILENAME, "r") as f:
             data = json.load(f)
@@ -383,12 +355,93 @@ def load_data():
         return {}
 
 
+# Menu-driven interface
+# -------------------------------
 
-    
+def main_menu():
+    global students
+    students = load_data()
 
+    while True:
+        print("\n" + "="*50)
+        print("      STUDENT GRADING SYSTEM MENU")
+        print("="*50)
+        print("1. Add a new student")
+        print("2. Add or update grades for a student")
+        print("3. Remove a specific grade from a student")
+        print("4. Display a student's report")
+        print("5. Display all students' reports")
+        print("6. Remove student(s)")
+        print("7. Search for a student")
+        print("8. Calculate class/subject average")
+        print("9. Rank students by average")
+        print("10. Save data")
+        print("11. Exit")
+        print("="*50)
 
+        choice = input("Enter your choice (1-11): ").strip()
+        if not choice.isdigit() or int(choice) not in range(1, 12):
+            print("Invalid choice! Enter a number from 1 to 11.")
+            continue
+        choice = int(choice)
 
+        if choice == 1:
+            name = input("Enter student's name: ").strip()
+            if name:
+                addStudent(name)
+            else:
+                print("Name cannot be empty.")
+        elif choice == 2:
+            name = input("Enter student's name: ").strip()
+            subject = input("Enter subject: ").strip()
+            grades_input = input("Enter grade(s) separated by commas: ").strip()
+            try:
+                grades = [float(g.strip()) for g in grades_input.split(",")]
+            except ValueError:
+                print("Invalid grades! Enter numbers only, separated by commas.")
+                continue
+            setGrade(name, subject, grades)
+        elif choice == 3:
+            name = input("Enter student's name: ").strip()
+            subject = input("Enter subject: ").strip()
+            grade_input = input("Enter grade to remove: ").strip()
+            try:
+                grade = float(grade_input)
+            except ValueError:
+                print("Invalid grade! Must be a number.")
+                continue
+            removeGrade(name, subject, grade)
+        elif choice == 4:
+            name = input("Enter student's name: ").strip()
+            displayReport(name)
+        elif choice == 5:
+            displayAllStudent()
+        elif choice == 6:
+            names_input = input("Enter student names to remove (comma-separated): ").strip()
+            names_list = [n.strip() for n in names_input.split(",") if n.strip()]
+            if names_list:
+                removeStudents(names_list)
+            else:
+                print("No valid names entered.")
+        elif choice == 7:
+            name = input("Enter student name to search: ").strip()
+            searchStudent(name)
+        elif choice == 8:
+            subject = input("Enter subject to calculate average for: ").strip()
+            if subject:
+                subjectAverage(subject)
+            else:
+                print("Subject cannot be empty.")
+        elif choice == 9:
+            rank_students()
+        elif choice == 10:
+            save_data(students)
+        elif choice == 11:
+            print("Saving data before exiting...")
+            save_data(students)
+            print("Goodbye!")
+            break
 
-
-
-
+# Run the program
+if __name__ == "__main__":
+    main_menu()
