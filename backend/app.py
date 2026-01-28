@@ -177,6 +177,6 @@ def search_student(name):
     return jsonify(report), 200
 
 
-
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0")
+
