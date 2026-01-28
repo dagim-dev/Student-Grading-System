@@ -1,1 +1,0 @@
-A Student Grading System that takes in students, subject, and grades as input and does many fucntions like Displaying the average grade for your particular subject and for your entire class.
