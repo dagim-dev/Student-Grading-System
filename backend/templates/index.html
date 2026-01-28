@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Grading System</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <h1>Student Grading System</h1>
+    </header>
+
+    <main>
+        <section id="add-student">
+            <h2>Add New Student</h2>
+            <input type="text" id="student-name" placeholder="Student Name">
+            <button id="add-student-btn">Add Student</button>
+            <button id="delete-student-btn">Delete Student</button>
+            <p class="message" id="student-message"></p>
+        </section>
+
+        <section id="add-grades">
+            <h2>Add Grades</h2>
+            <input type="text" id="grade-student-name" placeholder="Student Name">
+            <input type="text" id="grade-subject" placeholder="Subject">
+            <input type="text" id="grade-values" placeholder="Grades (comma-separated)">
+            <button id="add-grade-btn">Add Grades</button>
+            <button id="delete-grade-btn">Delete Grade</button>
+            <p class="message" id="grade-message"></p>
+        </section>
+
+        <section id="student-report">
+            <h2>View Student Report</h2>
+            <input type="text" id="report-student-name" placeholder="Student Name">
+            <button id="view-report-btn">View Report</button>
+            <div id="report-container"></div>
+        </section>
+
+        <section id="all-reports">
+            <h2>All Student Reports</h2>
+            <button id="view-all-reports-btn">View All Reports</button>
+            <div id="all-reports-container"></div>
+        </section>
+
+
+        <section id="rankings">
+            <h2>Student Rankings</h2>
+            <button id="view-rankings-btn">Refresh Rankings</button>
+            <div id="rankings-container"></div>
+        </section>
+
+        <section id="subject-average">
+            <h2>Subject Average</h2>
+            <input type="text" id="average-subject-name" placeholder="Subject Name">
+            <button id="view-subject-average-btn">View Average</button>
+            <div id="subject-average-container"></div>
+        </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
