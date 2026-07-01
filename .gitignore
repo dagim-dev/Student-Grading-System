@@ -21,6 +21,9 @@ build/
 # macOS
 .DS_Store
 
+# Runtime backups
+backups/
+
 # IDE
 .idea/
 .vscode/

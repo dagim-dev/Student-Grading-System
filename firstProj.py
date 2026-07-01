@@ -48,11 +48,10 @@ def letter_grade(avg):
 
 def addStudent(name):
     name = normalize_name(name)
-    if name not in students:
-        students[name] = {}
-        print(f"Student '{name}' added successfully.")
-    else:
-        print(f"The student '{name}' is already in the record!")
+    if name in students:
+        return {"success": False, "message": f"The student '{name}' is already in the record!"}
+    students[name] = {}
+    return {"success": True, "message": f"Student '{name}' added successfully."}
 
 
 
@@ -67,17 +66,19 @@ def setGrade(name, subject, grade):
     if not isinstance(grade, list):
         grade = [grade]
 
+    normalized = []
     for g in grade:
         if not isinstance(g, (int, float)):
             return {
                 "success": False,
                 "message": "Grades must be numbers"
             }
+        normalized.append(float(g))
 
     if subject in students[name]:
-        students[name][subject].extend(grade)
+        students[name][subject].extend(normalized)
     else:
-        students[name][subject] = grade
+        students[name][subject] = normalized
 
     return {
         "success": True,
@@ -85,27 +86,43 @@ def setGrade(name, subject, grade):
     }
 
 
+def _find_grade_index(grades_list, target):
+    target = float(target)
+    for i, g in enumerate(grades_list):
+        if isinstance(g, (int, float)) and float(g) == target:
+            return i
+    return None
+
+
 def removeGrade(name, subject, grade):
     name = normalize_name(name)
     subject = normalize_subject(subject)
 
     if not isinstance(grade, (int, float)):
-        print(f"Invalid grade input: {grade}. Must be a number.")
-        return
+        return {"success": False, "message": f"Invalid grade input: {grade}. Must be a number."}
 
     if name not in students:
-        print("This person is not in the record.")
-        return
+        return {"success": False, "message": "This person is not in the record."}
     if subject not in students[name]:
-        print(f"{name} is not taking the subject '{subject}'.")
-        return
-    if grade in students[name][subject]:
-        students[name][subject].remove(grade)
-        print(f"Grade {grade} removed from {subject} for {name}.")
-        if not students[name][subject]:
-            print(f"{name} now has no grades for {subject}.")
-    else:
-        print(f"The grade {grade} does not exist in {subject} for {name}.")
+        return {"success": False, "message": f"{name} is not taking the subject '{subject}'."}
+
+    idx = _find_grade_index(students[name][subject], grade)
+    if idx is None:
+        return {"success": False, "message": f"The grade {grade} does not exist in {subject} for {name}."}
+
+    students[name][subject].pop(idx)
+    return {"success": True, "message": f"Grade {grade} removed from {subject} for {name}."}
+
+
+def removeGrades(name, subject, grades):
+    results = []
+    for grade in grades:
+        result = removeGrade(name, subject, grade)
+        results.append(result)
+    failures = [r for r in results if not r["success"]]
+    if failures:
+        return {"success": False, "message": failures[0]["message"], "results": results}
+    return {"success": True, "message": f"Grades removed from {subject} for {name}.", "results": results}
 
 def displayReport(name):
     name = normalize_name(name)
@@ -165,7 +182,7 @@ def getStudentReport(name):
         grades = [g for g in grades_list if isinstance(g, (int, float))]
         if not grades:
             continue
-        subject_avg = sum(grades) / len(grades)
+        subject_avg = round(sum(grades) / len(grades), 2)
         all_grades.extend(grades)
         report["subjects"][subject] = {
             "grades": grades,
@@ -174,7 +191,7 @@ def getStudentReport(name):
         }
 
     if all_grades:
-        overall_avg = sum(all_grades) / len(all_grades)
+        overall_avg = round(sum(all_grades) / len(all_grades), 2)
         report["overall_average"] = overall_avg
         report["overall_letter"] = letter_grade(overall_avg)
 
@@ -316,22 +333,24 @@ def getRankings():
 
 
 def save_data(students_dict, create_backup=True):
+    new_content = json.dumps(students_dict, indent=4)
     if create_backup and not os.path.exists(BACKUP_FOLDER):
         os.makedirs(BACKUP_FOLDER)
     if create_backup and os.path.exists(FILENAME):
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        backup_file = os.path.join(BACKUP_FOLDER, f"students_backup_{timestamp}.json")
         try:
             with open(FILENAME, "r") as f:
-                data = f.read()
-            with open(backup_file, "w") as f:
-                f.write(data)
-            print(f"Backup created: {backup_file}")
+                old_content = f.read()
+            if old_content != new_content:
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                backup_file = os.path.join(BACKUP_FOLDER, f"students_backup_{timestamp}.json")
+                with open(backup_file, "w") as f:
+                    f.write(old_content)
+                print(f"Backup created: {backup_file}")
         except Exception as e:
             print(f"Warning: Backup could not be created. {e}")
     try:
         with open(FILENAME, "w") as f:
-            json.dump(students_dict, f, indent=4)
+            f.write(new_content)
         print(f"Student data saved successfully to {FILENAME}.")
     except Exception as e:
         print(f"Error saving data: {e}")
@@ -388,7 +407,8 @@ def main_menu():
         if choice == 1:
             name = input("Enter student's name: ").strip()
             if name:
-                addStudent(name)
+                result = addStudent(name)
+                print(result["message"])
             else:
                 print("Name cannot be empty.")
         elif choice == 2:
@@ -410,7 +430,8 @@ def main_menu():
             except ValueError:
                 print("Invalid grade! Must be a number.")
                 continue
-            removeGrade(name, subject, grade)
+            result = removeGrade(name, subject, grade)
+            print(result["message"])
         elif choice == 4:
             name = input("Enter student's name: ").strip()
             displayReport(name)

@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, render_template
+import os
 
 from firstProj import (
     students,          # the main dictionary
@@ -7,6 +8,7 @@ from firstProj import (
     addStudent,        # POST /students
     setGrade,          # POST /grades
     removeGrade,       # DELETE /grades
+    removeGrades,      # DELETE /grades (batch)
     normalize_name,    # DELETE /students
     getStudentReport,  # GET /students/<name> and /search/<name>
     getRankings,       # GET /rankings
@@ -20,7 +22,17 @@ students.update(load_data())
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+    return render_template("role.html")
+
+
+@app.route("/teacher")
+def teacher():
+    return render_template("teacher.html")
+
+
+@app.route("/student")
+def student():
+    return render_template("student.html")
 
 
 
@@ -45,8 +57,10 @@ def create_student():
         }), 400
 
     result = addStudent(data["name"])
-    save_data(students)
+    if not result["success"]:
+        return jsonify(result), 409
 
+    save_data(students)
     return jsonify(result), 201
 
 
@@ -71,7 +85,8 @@ def add_grade():
         }), 400
 
     result = setGrade(name, subject, grades)
-    save_data(students)
+    if result["success"]:
+        save_data(students)
 
     return jsonify(result), 201 if result["success"] else 400
 
@@ -128,20 +143,36 @@ def delete_grade():
 
     name = data.get("name")
     subject = data.get("subject")
+    grades = data.get("grades")
     grade = data.get("grade")
 
-    if not name or not subject or grade is None:
-        return jsonify({"success": False, "message": "Missing required fields: name, subject, grade"}), 400
+    if not name or not subject:
+        return jsonify({"success": False, "message": "Missing required fields: name, subject"}), 400
 
-    try:
-        grade = float(grade)
-    except ValueError:
-        return jsonify({"success": False, "message": "Grade must be a number"}), 400
+    if grades is None:
+        if grade is None:
+            return jsonify({"success": False, "message": "Missing required field: grade or grades"}), 400
+        grades = [grade]
+    elif not isinstance(grades, list):
+        grades = [grades]
 
-    removeGrade(name, subject, grade)
+    parsed_grades = []
+    for g in grades:
+        try:
+            parsed_grades.append(float(g))
+        except (TypeError, ValueError):
+            return jsonify({"success": False, "message": "Grades must be numbers"}), 400
+
+    if len(parsed_grades) == 1:
+        result = removeGrade(name, subject, parsed_grades[0])
+    else:
+        result = removeGrades(name, subject, parsed_grades)
+
+    if not result["success"]:
+        return jsonify(result), 404
+
     save_data(students)
-
-    return jsonify({"success": True, "message": f"Grade {grade} removed from {subject} for {name}"}), 200
+    return jsonify(result), 200
 
 
 
@@ -178,6 +209,9 @@ def search_student(name):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8000)
+    app.run(
+        debug=os.environ.get("FLASK_DEBUG", "0") == "1",
+        port=int(os.environ.get("PORT", 8000)),
+    )
 
 

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Grading System</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script>
+        (function () {
+            const saved = localStorage.getItem("theme");
+            const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            document.documentElement.setAttribute("data-theme", saved || (prefersDark ? "dark" : "light"));
+        })();
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Student Grading System</h1>
+        <div class="header-controls header-controls-right">
+            <button id="theme-toggle" type="button" aria-label="Toggle dark mode">Dark mode</button>
+        </div>
+    </header>
+
+    <main class="role-picker">
+        <section>
+            <h2>Who are you?</h2>
+            <p class="role-picker-subtitle">Choose your role to continue.</p>
+            <div class="role-options">
+                <button id="student-btn" type="button" class="role-card">
+                    <span class="role-title">Student</span>
+                    <span class="role-desc">Add grades and view reports</span>
+                </button>
+                <button id="teacher-btn" type="button" class="role-card">
+                    <span class="role-title">Teacher</span>
+                    <span class="role-desc">Full grading and admin tools</span>
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <script src="/static/shared.js"></script>
+    <script src="/static/role.js"></script>
+</body>
+</html>
