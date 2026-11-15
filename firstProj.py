@@ -50,9 +50,12 @@ def addStudent(name):
     name = normalize_name(name)
     if name not in students:
         students[name] = {}
-        print(f"Student '{name}' added successfully.")
-    else:
-        print(f"The student '{name}' is already in the record!")
+        message = f"Student '{name}' added successfully."
+        print(message)
+        return {"success": True, "message": message}
+    message = f"The student '{name}' is already in the record!"
+    print(message)
+    return {"success": False, "message": message}
 
 
 

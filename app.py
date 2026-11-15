@@ -45,8 +45,10 @@ def create_student():
         }), 400
 
     result = addStudent(data["name"])
-    save_data(students)
+    if not result["success"]:
+        return jsonify(result), 409
 
+    save_data(students)
     return jsonify(result), 201
 
 
